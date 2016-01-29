@@ -28,7 +28,7 @@ class TempiAudioInput: NSObject {
     private let outputBus: UInt32 = 0
     private let inputBus: UInt32 = 1
     private var audioInputCallback: TempiAudioInputCallback!
-
+    
     /// Instantiate a TempiAudioInput.
     /// - Parameter audioInputCallback: Invoked when audio data is available.
     /// - Parameter sampleRate: The sample rate to set up the audio session with.
@@ -65,10 +65,10 @@ class TempiAudioInput: NSObject {
     func stopRecording() {
         do {
             var osErr: OSStatus = 0
-
+            
             osErr = AudioUnitUninitialize(self.audioUnit)
             assert(osErr == noErr, "*** AudioUnitUninitialize err \(osErr)")
-
+            
             try self.audioSession.setActive(false)
         } catch {
             print("*** error: \(error)")
@@ -79,7 +79,7 @@ class TempiAudioInput: NSObject {
         
         let audioInput = unsafeBitCast(inRefCon, TempiAudioInput.self)
         var osErr: OSStatus = 0
-
+        
         // We've asked CoreAudio to allocate buffers for us, so just set mData to nil and it will be populated on AudioUnitRender().
         var bufferList = AudioBufferList(
             mNumberBuffers: 1,
@@ -87,7 +87,7 @@ class TempiAudioInput: NSObject {
                 mNumberChannels: UInt32(audioInput.numberOfChannels),
                 mDataByteSize: 4,
                 mData: nil))
-
+        
         osErr = AudioUnitRender(audioInput.audioUnit,
             ioActionFlags,
             inTimeStamp,
@@ -105,7 +105,7 @@ class TempiAudioInput: NSObject {
             var sample = unsafeBitCast(newPtr.memory, Float.self)
             monoSamples.append(sample)
         }
-
+        
         if audioInput.shouldPerformDCOffsetRejection {
             DCRejectionFilterProcessInPlace(&monoSamples, count: Int(inNumberFrames))
         }
@@ -131,7 +131,7 @@ class TempiAudioInput: NSObject {
             
             try audioSession.setPreferredSampleRate(Double(sampleRate))
             
-            // This will have an impact on CPU usage. .01 gives 512 samples per frame on iPhone.
+            // This will have an impact on CPU usage. .01 gives 512 samples per frame on iPhone. (Probably .01 * 44100 rounded up.)
             try audioSession.setPreferredIOBufferDuration(0.01)
             
             audioSession.requestRecordPermission { (granted) -> Void in
@@ -145,90 +145,90 @@ class TempiAudioInput: NSObject {
     }
     
     private func setupAudioUnit() {
-            
-            var componentDesc:AudioComponentDescription = AudioComponentDescription(
-                componentType: OSType(kAudioUnitType_Output),
-                componentSubType: OSType(kAudioUnitSubType_RemoteIO), // Always this for iOS.
-                componentManufacturer: OSType(kAudioUnitManufacturer_Apple),
-                componentFlags: 0,
-                componentFlagsMask: 0)
-            
-            var osErr: OSStatus = 0
-            
-            // Get an audio component matching our description.
-            let component: AudioComponent = AudioComponentFindNext(nil, &componentDesc)
-            assert(component != nil, "Couldn't find a default component")
-            
-            // Create an instance of the AudioUnit
-            osErr = AudioComponentInstanceNew(component, &audioUnit)
-            assert(osErr == noErr, "*** AudioComponentInstanceNew err \(osErr)")
-            
-            // Enable I/O for input.
-            var one:UInt32 = 1
-            
-            osErr = AudioUnitSetProperty(audioUnit,
-                kAudioOutputUnitProperty_EnableIO,
-                kAudioUnitScope_Input,
-                inputBus,
-                &one,
-                UInt32(sizeof(UInt32)))
-            assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
-            
-            osErr = AudioUnitSetProperty(audioUnit,
-                kAudioOutputUnitProperty_EnableIO,
-                kAudioUnitScope_Output,
-                outputBus,
-                &one,
-                UInt32(sizeof(UInt32)))
-            assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
-            
-            // Set format to 32 bit, floating point, linear PCM
-            var streamFormatDesc:AudioStreamBasicDescription = AudioStreamBasicDescription(
-                mSampleRate:        Double(sampleRate),
-                mFormatID:          kAudioFormatLinearPCM,
-                mFormatFlags:       kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved, // floating point data - docs say this is fastest
-                mBytesPerPacket:    4,
-                mFramesPerPacket:   1,
-                mBytesPerFrame:     4,
-                mChannelsPerFrame:  UInt32(self.numberOfChannels),
-                mBitsPerChannel:    4 * 8,
-                mReserved: 0
-            )
-            
-            // Set format for input and output busses
-            osErr = AudioUnitSetProperty(audioUnit,
-                kAudioUnitProperty_StreamFormat,
-                kAudioUnitScope_Input, outputBus,
-                &streamFormatDesc,
-                UInt32(sizeof(AudioStreamBasicDescription)))
-            assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
-            
-            osErr = AudioUnitSetProperty(audioUnit,
-                kAudioUnitProperty_StreamFormat,
-                kAudioUnitScope_Output,
-                inputBus,
-                &streamFormatDesc,
-                UInt32(sizeof(AudioStreamBasicDescription)))
-            assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
-            
-            // Set up our callback.
-            var inputCallbackStruct = AURenderCallbackStruct(inputProc: recordingCallback, inputProcRefCon: UnsafeMutablePointer(unsafeAddressOf(self)))
-            osErr = AudioUnitSetProperty(audioUnit,
-                AudioUnitPropertyID(kAudioOutputUnitProperty_SetInputCallback),
-                AudioUnitScope(kAudioUnitScope_Global),
-                inputBus,
-                &inputCallbackStruct,
-                UInt32(sizeof(AURenderCallbackStruct)))
-            assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
-            
-            // Ask CoreAudio to allocate buffers for us on render. (This is true by default but just to be explicit about it...)
-            osErr = AudioUnitSetProperty(audioUnit,
-                AudioUnitPropertyID(kAudioUnitProperty_ShouldAllocateBuffer),
-                AudioUnitScope(kAudioUnitScope_Output),
-                inputBus,
-                &one,
-                UInt32(sizeof(UInt32)))
-            assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
+        
+        var componentDesc:AudioComponentDescription = AudioComponentDescription(
+            componentType: OSType(kAudioUnitType_Output),
+            componentSubType: OSType(kAudioUnitSubType_RemoteIO), // Always this for iOS.
+            componentManufacturer: OSType(kAudioUnitManufacturer_Apple),
+            componentFlags: 0,
+            componentFlagsMask: 0)
+        
+        var osErr: OSStatus = 0
+        
+        // Get an audio component matching our description.
+        let component: AudioComponent = AudioComponentFindNext(nil, &componentDesc)
+        assert(component != nil, "Couldn't find a default component")
+        
+        // Create an instance of the AudioUnit
+        osErr = AudioComponentInstanceNew(component, &audioUnit)
+        assert(osErr == noErr, "*** AudioComponentInstanceNew err \(osErr)")
+        
+        // Enable I/O for input.
+        var one:UInt32 = 1
+        
+        osErr = AudioUnitSetProperty(audioUnit,
+            kAudioOutputUnitProperty_EnableIO,
+            kAudioUnitScope_Input,
+            inputBus,
+            &one,
+            UInt32(sizeof(UInt32)))
+        assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
+        
+        osErr = AudioUnitSetProperty(audioUnit,
+            kAudioOutputUnitProperty_EnableIO,
+            kAudioUnitScope_Output,
+            outputBus,
+            &one,
+            UInt32(sizeof(UInt32)))
+        assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
+        
+        // Set format to 32 bit, floating point, linear PCM
+        var streamFormatDesc:AudioStreamBasicDescription = AudioStreamBasicDescription(
+            mSampleRate:        Double(sampleRate),
+            mFormatID:          kAudioFormatLinearPCM,
+            mFormatFlags:       kAudioFormatFlagsNativeFloatPacked | kAudioFormatFlagIsNonInterleaved, // floating point data - docs say this is fastest
+            mBytesPerPacket:    4,
+            mFramesPerPacket:   1,
+            mBytesPerFrame:     4,
+            mChannelsPerFrame:  UInt32(self.numberOfChannels),
+            mBitsPerChannel:    4 * 8,
+            mReserved: 0
+        )
+        
+        // Set format for input and output busses
+        osErr = AudioUnitSetProperty(audioUnit,
+            kAudioUnitProperty_StreamFormat,
+            kAudioUnitScope_Input, outputBus,
+            &streamFormatDesc,
+            UInt32(sizeof(AudioStreamBasicDescription)))
+        assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
+        
+        osErr = AudioUnitSetProperty(audioUnit,
+            kAudioUnitProperty_StreamFormat,
+            kAudioUnitScope_Output,
+            inputBus,
+            &streamFormatDesc,
+            UInt32(sizeof(AudioStreamBasicDescription)))
+        assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
+        
+        // Set up our callback.
+        var inputCallbackStruct = AURenderCallbackStruct(inputProc: recordingCallback, inputProcRefCon: UnsafeMutablePointer(unsafeAddressOf(self)))
+        osErr = AudioUnitSetProperty(audioUnit,
+            AudioUnitPropertyID(kAudioOutputUnitProperty_SetInputCallback),
+            AudioUnitScope(kAudioUnitScope_Global),
+            inputBus,
+            &inputCallbackStruct,
+            UInt32(sizeof(AURenderCallbackStruct)))
+        assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
+        
+        // Ask CoreAudio to allocate buffers for us on render. (This is true by default but just to be explicit about it...)
+        osErr = AudioUnitSetProperty(audioUnit,
+            AudioUnitPropertyID(kAudioUnitProperty_ShouldAllocateBuffer),
+            AudioUnitScope(kAudioUnitScope_Output),
+            inputBus,
+            &one,
+            UInt32(sizeof(UInt32)))
+        assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
     }
 }
 

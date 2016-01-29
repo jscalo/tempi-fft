@@ -44,7 +44,7 @@ class SpectralView: UIView {
         
         var x: CGFloat = 0.0
         
-        let count = fft.bandCount
+        let count = fft.numberOfBands
         
         // Draw the spectrum.
         let maxDB: Float = 64.0

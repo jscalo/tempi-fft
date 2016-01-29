@@ -33,6 +33,10 @@ class SpectralViewController: UIViewController {
         let fft = TempiFFT(withSize: numberOfFrames, sampleRate: 44100.0)
         fft.windowType = TempiFFTWindowType.hanning
         fft.fftForward(samples)
+        
+        // Interpoloate the FFT data so there's one band per pixel.
+        let screenWidth = UIScreen.mainScreen().bounds.size.width * UIScreen.mainScreen().scale
+        fft.calculateLinearBands(minFrequency: 0, maxFrequency: fft.nyquistFrequency, numberOfBands: Int(screenWidth))
 
         tempi_dispatch_main { () -> () in
             self.spectralView.fft = fft
