@@ -1,26 +1,25 @@
 //
 //  TempiAudioInput.swift
-//  TempiHarness
+//  TempiBeatDetection
 //
 //  Created by John Scalo on 1/7/16.
-//  Copyright © 2016 John Scalo. All rights reserved.
-//
+//  Copyright © 2016 John Scalo. See accompanying License.txt for terms.
 
 import AVFoundation
 
 typealias TempiAudioInputCallback = (
-    numberOfFrames: Int,
-    timeStamp: Double,
-    inout samples: [Float]
+    _ timeStamp: Double,
+    _ numberOfFrames: Int,
+    _ samples: [Float]
     ) -> Void
 
 /// TempiAudioInput sets up an audio input session and notifies when new buffer data is available.
 class TempiAudioInput: NSObject {
     
-    private(set) var audioUnit: AudioUnit = nil
+    private(set) var audioUnit: AudioUnit!
     let audioSession : AVAudioSession = AVAudioSession.sharedInstance()
-    private(set) var sampleRate: Float
-    private(set) var numberOfChannels: Int
+    var sampleRate: Float
+    var numberOfChannels: Int
     
     /// When true, performs DC offset rejection on the incoming buffer before invoking the audioInputCallback.
     var shouldPerformDCOffsetRejection: Bool = false
@@ -28,18 +27,19 @@ class TempiAudioInput: NSObject {
     private let outputBus: UInt32 = 0
     private let inputBus: UInt32 = 1
     private var audioInputCallback: TempiAudioInputCallback!
-    
+
     /// Instantiate a TempiAudioInput.
     /// - Parameter audioInputCallback: Invoked when audio data is available.
     /// - Parameter sampleRate: The sample rate to set up the audio session with.
     /// - Parameter numberOfChannels: The number of channels to set up the audio session with.
-    init(audioInputCallback callback: TempiAudioInputCallback, sampleRate: Float? = 44100.0, numberOfChannels: Int? = 2) {
+    
+    init(audioInputCallback callback: @escaping TempiAudioInputCallback, sampleRate: Float = 44100.0, numberOfChannels: Int = 2) {
         
-        self.sampleRate = sampleRate!
-        self.numberOfChannels = numberOfChannels!
+        self.sampleRate = sampleRate
+        self.numberOfChannels = numberOfChannels
         audioInputCallback = callback
     }
-    
+
     /// Start recording. Prompts for access to microphone if necessary.
     func startRecording() {
         do {
@@ -77,7 +77,7 @@ class TempiAudioInput: NSObject {
     
     private let recordingCallback: AURenderCallback = { (inRefCon, ioActionFlags, inTimeStamp, inBusNumber, inNumberFrames, ioData) -> OSStatus in
         
-        let audioInput = unsafeBitCast(inRefCon, TempiAudioInput.self)
+        let audioInput = unsafeBitCast(inRefCon, to: TempiAudioInput.self)
         var osErr: OSStatus = 0
         
         // We've asked CoreAudio to allocate buffers for us, so just set mData to nil and it will be populated on AudioUnitRender().
@@ -97,20 +97,18 @@ class TempiAudioInput: NSObject {
         assert(osErr == noErr, "*** AudioUnitRender err \(osErr)")
         
         // Move samples from mData into our native [Float] format.
-        // (There's probably an better way to do this using UnsafeBufferPointer but I couldn't make it work.)
         var monoSamples = [Float]()
-        for i in 0..<Int(inNumberFrames) {
-            var ptr = UnsafePointer<Float>(bufferList.mBuffers.mData)
-            let newPtr = ptr + i
-            var sample = unsafeBitCast(newPtr.memory, Float.self)
-            monoSamples.append(sample)
-        }
+        let ptr = bufferList.mBuffers.mData?.assumingMemoryBound(to: Float.self)
+        monoSamples.append(contentsOf: UnsafeBufferPointer(start: ptr, count: Int(inNumberFrames)))
         
         if audioInput.shouldPerformDCOffsetRejection {
             DCRejectionFilterProcessInPlace(&monoSamples, count: Int(inNumberFrames))
         }
         
-        audioInput.audioInputCallback(numberOfFrames: Int(inNumberFrames), timeStamp: inTimeStamp.memory.mSampleTime, samples: &monoSamples)
+        // Not compatible with Obj-C...
+        audioInput.audioInputCallback(inTimeStamp.pointee.mSampleTime / Double(audioInput.sampleRate),
+                                      Int(inNumberFrames),
+                                      monoSamples)
         
         return 0
     }
@@ -132,6 +130,7 @@ class TempiAudioInput: NSObject {
             try audioSession.setPreferredSampleRate(Double(sampleRate))
             
             // This will have an impact on CPU usage. .01 gives 512 samples per frame on iPhone. (Probably .01 * 44100 rounded up.)
+            // NB: This is considered a 'hint' and more often than not is just ignored.
             try audioSession.setPreferredIOBufferDuration(0.01)
             
             audioSession.requestRecordPermission { (granted) -> Void in
@@ -156,11 +155,14 @@ class TempiAudioInput: NSObject {
         var osErr: OSStatus = 0
         
         // Get an audio component matching our description.
-        let component: AudioComponent = AudioComponentFindNext(nil, &componentDesc)
+        let component: AudioComponent! = AudioComponentFindNext(nil, &componentDesc)
         assert(component != nil, "Couldn't find a default component")
         
         // Create an instance of the AudioUnit
-        osErr = AudioComponentInstanceNew(component, &audioUnit)
+        var tempAudioUnit: AudioUnit?
+        osErr = AudioComponentInstanceNew(component, &tempAudioUnit)
+        self.audioUnit = tempAudioUnit
+        
         assert(osErr == noErr, "*** AudioComponentInstanceNew err \(osErr)")
         
         // Enable I/O for input.
@@ -171,7 +173,7 @@ class TempiAudioInput: NSObject {
             kAudioUnitScope_Input,
             inputBus,
             &one,
-            UInt32(sizeof(UInt32)))
+            UInt32(MemoryLayout<UInt32>.size))
         assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
         
         osErr = AudioUnitSetProperty(audioUnit,
@@ -179,7 +181,7 @@ class TempiAudioInput: NSObject {
             kAudioUnitScope_Output,
             outputBus,
             &one,
-            UInt32(sizeof(UInt32)))
+            UInt32(MemoryLayout<UInt32>.size))
         assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
         
         // Set format to 32 bit, floating point, linear PCM
@@ -200,7 +202,7 @@ class TempiAudioInput: NSObject {
             kAudioUnitProperty_StreamFormat,
             kAudioUnitScope_Input, outputBus,
             &streamFormatDesc,
-            UInt32(sizeof(AudioStreamBasicDescription)))
+            UInt32(MemoryLayout<AudioStreamBasicDescription>.size))
         assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
         
         osErr = AudioUnitSetProperty(audioUnit,
@@ -208,17 +210,17 @@ class TempiAudioInput: NSObject {
             kAudioUnitScope_Output,
             inputBus,
             &streamFormatDesc,
-            UInt32(sizeof(AudioStreamBasicDescription)))
+            UInt32(MemoryLayout<AudioStreamBasicDescription>.size))
         assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
         
         // Set up our callback.
-        var inputCallbackStruct = AURenderCallbackStruct(inputProc: recordingCallback, inputProcRefCon: UnsafeMutablePointer(unsafeAddressOf(self)))
+        var inputCallbackStruct = AURenderCallbackStruct(inputProc: recordingCallback, inputProcRefCon: UnsafeMutableRawPointer(Unmanaged.passUnretained(self).toOpaque()))
         osErr = AudioUnitSetProperty(audioUnit,
             AudioUnitPropertyID(kAudioOutputUnitProperty_SetInputCallback),
             AudioUnitScope(kAudioUnitScope_Global),
             inputBus,
             &inputCallbackStruct,
-            UInt32(sizeof(AURenderCallbackStruct)))
+            UInt32(MemoryLayout<AURenderCallbackStruct>.size))
         assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
         
         // Ask CoreAudio to allocate buffers for us on render. (This is true by default but just to be explicit about it...)
@@ -227,12 +229,12 @@ class TempiAudioInput: NSObject {
             AudioUnitScope(kAudioUnitScope_Output),
             inputBus,
             &one,
-            UInt32(sizeof(UInt32)))
+            UInt32(MemoryLayout<UInt32>.size))
         assert(osErr == noErr, "*** AudioUnitSetProperty err \(osErr)")
     }
 }
 
-private func DCRejectionFilterProcessInPlace(inout audioData: [Float], count: Int) {
+private func DCRejectionFilterProcessInPlace(_ audioData: inout [Float], count: Int) {
     
     let defaultPoleDist: Float = 0.975
     var mX1: Float = 0

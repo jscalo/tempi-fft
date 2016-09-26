@@ -12,7 +12,7 @@ class SpectralView: UIView {
 
     var fft: TempiFFT!
 
-    override func drawRect(rect: CGRect) {
+    override func draw(_ rect: CGRect) {
         
         if fft == nil {
             return
@@ -20,27 +20,27 @@ class SpectralView: UIView {
         
         let context = UIGraphicsGetCurrentContext()
         
-        self.drawSpectrum(context!)
+        self.drawSpectrum(context: context!)
         
         // We're drawing static labels every time through our drawRect() which is a waste.
         // If this were more than a demo we'd take care to only draw them once.
-        self.drawLabels(context!)
+        self.drawLabels(context: context!)
     }
     
-    private func drawSpectrum(context: CGContextRef) {
+    private func drawSpectrum(context: CGContext) {
         let viewWidth = self.bounds.size.width
         let viewHeight = self.bounds.size.height
         let plotYStart: CGFloat = 48.0
         
-        CGContextSaveGState(context)
-        CGContextScaleCTM(context, 1, -1)
-        CGContextTranslateCTM(context, 0, -viewHeight)
+        context.saveGState()
+        context.scaleBy(x: 1, y: -1)
+        context.translateBy(x: 0, y: -viewHeight)
         
-        let colors: CFArrayRef = [UIColor.greenColor().CGColor, UIColor.yellowColor().CGColor, UIColor.redColor().CGColor]
-        let gradient = CGGradientCreateWithColors(
-            nil, // generic color space
-            colors,
-            [0.0, 0.3, 0.6])
+        let colors = [UIColor.green.cgColor, UIColor.yellow.cgColor, UIColor.red.cgColor]
+        let gradient = CGGradient(
+            colorsSpace: nil, // generic color space
+            colors: colors as CFArray,
+            locations: [0.0, 0.3, 0.6])
         
         var x: CGFloat = 0.0
         
@@ -50,7 +50,7 @@ class SpectralView: UIView {
         let maxDB: Float = 64.0
         let minDB: Float = -32.0
         let headroom = maxDB - minDB
-        let colWidth = tempi_round_device_scale(viewWidth / CGFloat(count))
+        let colWidth = tempi_round_device_scale(d: viewWidth / CGFloat(count))
         
         for i in 0..<count {
             let magnitude = fft.magnitudeAtBand(i)
@@ -66,37 +66,37 @@ class SpectralView: UIView {
             
             let colRect: CGRect = CGRect(x: x, y: plotYStart, width: colWidth, height: magnitudeNorm)
             
-            let startPoint = CGPointMake(viewWidth / 2, 0)
-            let endPoint = CGPointMake(viewWidth / 2, viewHeight)
+            let startPoint = CGPoint(x: viewWidth / 2, y: 0)
+            let endPoint = CGPoint(x: viewWidth / 2, y: viewHeight)
             
-            CGContextSaveGState(context)
-            CGContextClipToRect(context, colRect)
-            CGContextDrawLinearGradient(context, gradient, startPoint, endPoint, CGGradientDrawingOptions(rawValue: 0))
-            CGContextRestoreGState(context)
+            context.saveGState()
+            context.clip(to: colRect)
+            context.drawLinearGradient(gradient!, start: startPoint, end: endPoint, options: CGGradientDrawingOptions(rawValue: 0))
+            context.restoreGState()
             
             x += colWidth
         }
         
-        CGContextRestoreGState(context)
+        context.restoreGState()
     }
     
-    private func drawLabels(context: CGContextRef) {
+    private func drawLabels(context: CGContext) {
         let viewWidth = self.bounds.size.width
         let viewHeight = self.bounds.size.height
         
-        CGContextSaveGState(context)
-        CGContextTranslateCTM(context, 0, viewHeight);
+        context.saveGState()
+        context.translateBy(x: 0, y: viewHeight);
         
         let pointSize: CGFloat = 15.0
-        let font = UIFont.systemFontOfSize(pointSize, weight: UIFontWeightRegular)
+        let font = UIFont.systemFont(ofSize: pointSize, weight: UIFontWeightRegular)
         
         let freqLabelStr = "Frequency (kHz)"
         var attrStr = NSMutableAttributedString(string: freqLabelStr)
         attrStr.addAttribute(NSFontAttributeName, value: font, range: NSMakeRange(0, freqLabelStr.characters.count))
-        attrStr.addAttribute(NSForegroundColorAttributeName, value: UIColor.yellowColor(), range: NSMakeRange(0, freqLabelStr.characters.count))
+        attrStr.addAttribute(NSForegroundColorAttributeName, value: UIColor.yellow, range: NSMakeRange(0, freqLabelStr.characters.count))
         
         var x: CGFloat = viewWidth / 2.0 - attrStr.size().width / 2.0
-        attrStr.drawAtPoint(CGPointMake(x, -22))
+        attrStr.draw(at: CGPoint(x: x, y: -22))
         
         let labelStrings: [String] = ["5", "10", "15", "20"]
         let labelValues: [CGFloat] = [5000, 10000, 15000, 20000]
@@ -107,12 +107,12 @@ class SpectralView: UIView {
             
             attrStr = NSMutableAttributedString(string: str)
             attrStr.addAttribute(NSFontAttributeName, value: font, range: NSMakeRange(0, str.characters.count))
-            attrStr.addAttribute(NSForegroundColorAttributeName, value: UIColor.yellowColor(), range: NSMakeRange(0, str.characters.count))
+            attrStr.addAttribute(NSForegroundColorAttributeName, value: UIColor.yellow, range: NSMakeRange(0, str.characters.count))
             
             x = freq / samplesPerPixel - pointSize / 2.0
-            attrStr.drawAtPoint(CGPointMake(x, -40))
+            attrStr.draw(at: CGPoint(x: x, y: -40))
         }
         
-        CGContextRestoreGState(context)
+        context.restoreGState()
     }
 }

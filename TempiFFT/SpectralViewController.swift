@@ -18,11 +18,11 @@ class SpectralViewController: UIViewController {
         super.viewDidLoad()
 
         spectralView = SpectralView(frame: self.view.bounds)
-        spectralView.backgroundColor = UIColor.blackColor()
+        spectralView.backgroundColor = UIColor.black
         self.view.addSubview(spectralView)
         
-        let audioInputCallback: TempiAudioInputCallback = { (numberOfFrames, timeStamp, inout samples: [Float]) -> Void in
-            self.gotSomeAudio(numberOfFrames, timeStamp: timeStamp, samples: samples)
+        let audioInputCallback: TempiAudioInputCallback = { (numberOfFrames, timeStamp, samples) -> Void in
+            self.gotSomeAudio(numberOfFrames: Int(numberOfFrames), timeStamp: Double(timeStamp), samples: samples)
         }
         
         audioInput = TempiAudioInput(audioInputCallback: audioInputCallback, sampleRate: 44100, numberOfChannels: 1)
@@ -35,7 +35,7 @@ class SpectralViewController: UIViewController {
         fft.fftForward(samples)
         
         // Interpoloate the FFT data so there's one band per pixel.
-        let screenWidth = UIScreen.mainScreen().bounds.size.width * UIScreen.mainScreen().scale
+        let screenWidth = UIScreen.main.bounds.size.width * UIScreen.main.scale
         fft.calculateLinearBands(minFrequency: 0, maxFrequency: fft.nyquistFrequency, numberOfBands: Int(screenWidth))
 
         tempi_dispatch_main { () -> () in

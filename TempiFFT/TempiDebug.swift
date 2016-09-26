@@ -10,22 +10,22 @@ import Foundation
 import UIKit
 
 // Provide either sampleArray (a [Float]) or samplePointer (a C pointer to an array of Float)
-func TempiDebugWaveform(count count: Int, sampleArray: [Float]? = nil, samplePointer: UnsafePointer<Float>? = nil) -> UIImage {
+func TempiDebugWaveform(count: Int, sampleArray: [Float]? = nil, samplePointer: UnsafePointer<Float>? = nil) -> UIImage {
     
     let height: CGFloat = 800.0
     let width: CGFloat = CGFloat(count)
     let bgndRect: CGRect = CGRect(x: 0, y: 0, width: width, height: height)
 
     UIGraphicsBeginImageContextWithOptions(bgndRect.size, false, 2.0)
-    let context: CGContextRef = UIGraphicsGetCurrentContext()!
+    let context: CGContext = UIGraphicsGetCurrentContext()!
     
-    CGContextScaleCTM(context, 1, -1)
-    CGContextTranslateCTM(context, 0, -height)
-    CGContextSaveGState(context)
+    context.scaleBy(x: 1, y: -1)
+    context.translateBy(x: 0, y: -height)
+    context.saveGState()
 
     // Fill background with black
-    CGContextSetFillColorWithColor(context, CGColorCreate(CGColorSpaceCreateDeviceRGB(), [0.0, 0.0, 0.0, 1.0]))
-    CGContextFillRect(context, bgndRect)
+    context.setFillColor(CGColor(colorSpace: CGColorSpaceCreateDeviceRGB(), components: [0.0, 0.0, 0.0, 1.0])!)
+    context.fill(bgndRect)
 
     // Draw waveform columns
     let colWidth: CGFloat = 1.0
@@ -37,7 +37,7 @@ func TempiDebugWaveform(count count: Int, sampleArray: [Float]? = nil, samplePoi
             sample = unwrappedSampleArray[i]
         } else if let unwrappedSamplePointer = samplePointer {
             let newPtr = unwrappedSamplePointer + i
-            sample = unsafeBitCast(newPtr.memory, Float.self)
+            sample = unsafeBitCast(newPtr.pointee, to: Float.self)
         } else {
             assertionFailure("Me want data nom nom")
         }
@@ -46,14 +46,14 @@ func TempiDebugWaveform(count count: Int, sampleArray: [Float]? = nil, samplePoi
         let colRect: CGRect = CGRect(x: x, y: 400, width: colWidth, height: CGFloat(qSample))
         
         // Use orange for column color and fill it
-        CGContextSetFillColorWithColor(context, CGColorCreate(CGColorSpaceCreateDeviceRGB(), [1.0, 0.5, 0.0, 1.0]))
-        CGContextFillRect(context, colRect)
+        context.setFillColor(CGColor(colorSpace: CGColorSpaceCreateDeviceRGB(), components: [1.0, 0.5, 0.0, 1.0])!)
+        context.fill(colRect)
         
         x += colWidth
     }
     
-    CGContextRestoreGState(context)
-    let image: UIImage = UIGraphicsGetImageFromCurrentImageContext()
+    context.restoreGState()
+    let image: UIImage = UIGraphicsGetImageFromCurrentImageContext()!
     UIGraphicsEndImageContext()
     
     return image
@@ -66,7 +66,7 @@ func TempiDebugSampleDump(count: Int, sampleArray: [Float]? = nil, samplePointer
             sample = unwrappedSampleArray[i]
         } else if let unwrappedSamplePointer = samplePointer {
             let newPtr = unwrappedSamplePointer + i
-            sample = unsafeBitCast(newPtr.memory, Float.self)
+            sample = unsafeBitCast(newPtr.pointee, to: Float.self)
         } else {
             assertionFailure("Me want data nom nom")
         }
