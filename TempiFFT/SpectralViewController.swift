@@ -21,15 +21,15 @@ class SpectralViewController: UIViewController {
         spectralView.backgroundColor = UIColor.black
         self.view.addSubview(spectralView)
         
-        let audioInputCallback: TempiAudioInputCallback = { (numberOfFrames, timeStamp, samples) -> Void in
-            self.gotSomeAudio(numberOfFrames: Int(numberOfFrames), timeStamp: Double(timeStamp), samples: samples)
+        let audioInputCallback: TempiAudioInputCallback = { (timeStamp, numberOfFrames, samples) -> Void in
+            self.gotSomeAudio(timeStamp: Double(timeStamp), numberOfFrames: Int(numberOfFrames), samples: samples)
         }
         
         audioInput = TempiAudioInput(audioInputCallback: audioInputCallback, sampleRate: 44100, numberOfChannels: 1)
         audioInput.startRecording()
     }
 
-    func gotSomeAudio(numberOfFrames: Int, timeStamp: Double, samples: [Float]) {
+    func gotSomeAudio(timeStamp: Double, numberOfFrames: Int, samples: [Float]) {
         let fft = TempiFFT(withSize: numberOfFrames, sampleRate: 44100.0)
         fft.windowType = TempiFFTWindowType.hanning
         fft.fftForward(samples)
