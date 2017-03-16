@@ -37,7 +37,7 @@ func TempiDebugWaveform(count: Int, sampleArray: [Float]? = nil, samplePointer: 
             sample = unwrappedSampleArray[i]
         } else if let unwrappedSamplePointer = samplePointer {
             let newPtr = unwrappedSamplePointer + i
-            sample = unsafeBitCast(newPtr.pointee, to: Float.self)
+            sample = newPtr.pointee
         } else {
             assertionFailure("Me want data nom nom")
         }
@@ -66,7 +66,7 @@ func TempiDebugSampleDump(count: Int, sampleArray: [Float]? = nil, samplePointer
             sample = unwrappedSampleArray[i]
         } else if let unwrappedSamplePointer = samplePointer {
             let newPtr = unwrappedSamplePointer + i
-            sample = unsafeBitCast(newPtr.pointee, to: Float.self)
+            sample = newPtr.pointee
         } else {
             assertionFailure("Me want data nom nom")
         }
