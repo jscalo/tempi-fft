@@ -55,7 +55,7 @@ import Accelerate
     }
     
     // After performing the FFT, contains size/2 magnitudes, one for each frequency band.
-    private var magnitudes: [Float]!
+    private var magnitudes: [Float] = []
     
     /// After calling calculateLinearBands() or calculateLogarithmicBands(), contains a magnitude for each band.
     private(set) var bandMagnitudes: [Float]!
@@ -81,7 +81,7 @@ import Accelerate
     
     private var halfSize:Int
     private var log2Size:Int
-    private var window:[Float]!
+    private var window:[Float] = []
     private var fftSetup:FFTSetup
     private var hasPerformedFFT: Bool = false
     private var complexBuffer: DSPSplitComplex!
@@ -126,14 +126,14 @@ import Accelerate
         // If we have a window, apply it now. Since 99.9% of the time the window array will be exactly the same, an optimization would be to create it once and cache it, possibly caching it by size.
         if self.windowType != .none {
             
-            if self.window == nil {
+            if self.window.isEmpty {
                 self.window = [Float](repeating: 0.0, count: size)
                 
                 switch self.windowType {
                 case .hamming:
-                    vDSP_hamm_window(&self.window!, UInt(size), 0)
+                    vDSP_hamm_window(&self.window, UInt(size), 0)
                 case .hanning:
-                    vDSP_hann_window(&self.window!, UInt(size), Int32(vDSP_HANN_NORM))
+                    vDSP_hann_window(&self.window, UInt(size), Int32(vDSP_HANN_NORM))
                 default:
                     break
                 }
@@ -176,7 +176,7 @@ import Accelerate
         
         // Store and square (for better visualization & conversion to db) the magnitudes
         self.magnitudes = [Float](repeating: 0.0, count: self.halfSize)
-        vDSP_zvmags(&(self.complexBuffer!), 1, &self.magnitudes!, 1, UInt(self.halfSize))
+        vDSP_zvmags(&(self.complexBuffer!), 1, &self.magnitudes, 1, UInt(self.halfSize))
         
         self.hasPerformedFFT = true
     }
