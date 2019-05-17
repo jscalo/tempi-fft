@@ -115,17 +115,17 @@ class TempiAudioInput: NSObject {
     
     private func setupAudioSession() {
         
-        if !audioSession.availableCategories.contains(AVAudioSessionCategoryRecord) {
+        if !convertFromAVAudioSessionCategoryArray(audioSession.availableCategories).contains(convertFromAVAudioSessionCategory(AVAudioSession.Category.record)) {
             print("can't record! bailing.")
             return
         }
         
         do {
-            try audioSession.setCategory(AVAudioSessionCategoryRecord)
+            try audioSession.setCategory(AVAudioSession.Category(rawValue: convertFromAVAudioSessionCategory(AVAudioSession.Category.record)))
             
             // "Appropriate for applications that wish to minimize the effect of system-supplied signal processing for input and/or output audio signals."
             // NB: This turns off the high-pass filter that CoreAudio normally applies.
-            try audioSession.setMode(AVAudioSessionModeMeasurement)
+            try audioSession.setMode(AVAudioSession.Mode.measurement)
             
             try audioSession.setPreferredSampleRate(Double(sampleRate))
             
@@ -248,3 +248,13 @@ private func DCRejectionFilterProcessInPlace(_ audioData: inout [Float], count: 
     }
 }
 
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromAVAudioSessionCategoryArray(_ input: [AVAudioSession.Category]) -> [String] {
+	return input.map { key in key.rawValue }
+}
+
+// Helper function inserted by Swift 4.2 migrator.
+fileprivate func convertFromAVAudioSessionCategory(_ input: AVAudioSession.Category) -> String {
+	return input.rawValue
+}
