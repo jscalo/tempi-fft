@@ -88,12 +88,12 @@ class SpectralView: UIView {
         context.translateBy(x: 0, y: viewHeight);
         
         let pointSize: CGFloat = 15.0
-        let font = UIFont.systemFont(ofSize: pointSize, weight: UIFont.Weight.regular)
+        let font = UIFont.systemFont(ofSize: pointSize, weight: .regular)
         
         let freqLabelStr = "Frequency (kHz)"
         var attrStr = NSMutableAttributedString(string: freqLabelStr)
-        attrStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSMakeRange(0, freqLabelStr.count))
-        attrStr.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.yellow, range: NSMakeRange(0, freqLabelStr.count))
+        attrStr.addAttribute(.font, value: font, range: NSMakeRange(0, freqLabelStr.count))
+        attrStr.addAttribute(.foregroundColor, value: UIColor.yellow, range: NSMakeRange(0, freqLabelStr.count))
         
         var x: CGFloat = viewWidth / 2.0 - attrStr.size().width / 2.0
         attrStr.draw(at: CGPoint(x: x, y: -22))
@@ -106,8 +106,8 @@ class SpectralView: UIView {
             let freq = labelValues[i]
             
             attrStr = NSMutableAttributedString(string: str)
-            attrStr.addAttribute(NSAttributedString.Key.font, value: font, range: NSMakeRange(0, str.count))
-            attrStr.addAttribute(NSAttributedString.Key.foregroundColor, value: UIColor.yellow, range: NSMakeRange(0, str.count))
+            attrStr.addAttribute(.font, value: font, range: NSMakeRange(0, str.count))
+            attrStr.addAttribute(.foregroundColor, value: UIColor.yellow, range: NSMakeRange(0, str.count))
             
             x = freq / samplesPerPixel - pointSize / 2.0
             attrStr.draw(at: CGPoint(x: x, y: -40))
