@@ -115,17 +115,17 @@ class TempiAudioInput: NSObject {
     
     private func setupAudioSession() {
         
-        if !audioSession.availableCategories.contains(AVAudioSessionCategoryRecord) {
+        guard audioSession.availableCategories.contains(.record) else {
             print("can't record! bailing.")
             return
         }
         
         do {
-            try audioSession.setCategory(AVAudioSessionCategoryRecord)
+            try audioSession.setCategory(.record)
             
             // "Appropriate for applications that wish to minimize the effect of system-supplied signal processing for input and/or output audio signals."
             // NB: This turns off the high-pass filter that CoreAudio normally applies.
-            try audioSession.setMode(AVAudioSessionModeMeasurement)
+            try audioSession.setMode(AVAudioSession.Mode.measurement)
             
             try audioSession.setPreferredSampleRate(Double(sampleRate))
             
@@ -247,4 +247,3 @@ private func DCRejectionFilterProcessInPlace(_ audioData: inout [Float], count: 
         mY1 = audioData[i]
     }
 }
-
