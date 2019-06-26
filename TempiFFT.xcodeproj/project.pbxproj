@@ -7,9 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		EF140AE122C3E76C0079D5FD /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF140AE322C3E76C0079D5FD /* Main.storyboard */; };
 		EF7009141C3ED07100E75ECF /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7009131C3ED07100E75ECF /* AppDelegate.swift */; };
 		EF7009161C3ED07100E75ECF /* SpectralViewController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7009151C3ED07100E75ECF /* SpectralViewController.swift */; };
-		EF7009191C3ED07100E75ECF /* Main.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF7009171C3ED07100E75ECF /* Main.storyboard */; };
 		EF70091B1C3ED07100E75ECF /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = EF70091A1C3ED07100E75ECF /* Assets.xcassets */; };
 		EF70091E1C3ED07100E75ECF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = EF70091C1C3ED07100E75ECF /* LaunchScreen.storyboard */; };
 		EF70092A1C3EDFB900E75ECF /* TempiAudioInput.swift in Sources */ = {isa = PBXBuildFile; fileRef = EF7009291C3EDFB900E75ECF /* TempiAudioInput.swift */; };
@@ -20,10 +20,10 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		EF140AE222C3E76C0079D5FD /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		EF7009101C3ED07100E75ECF /* TempiFFT.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TempiFFT.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		EF7009131C3ED07100E75ECF /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		EF7009151C3ED07100E75ECF /* SpectralViewController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpectralViewController.swift; sourceTree = "<group>"; };
-		EF7009181C3ED07100E75ECF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/Main.storyboard; sourceTree = "<group>"; };
 		EF70091A1C3ED07100E75ECF /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		EF70091D1C3ED07100E75ECF /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		EF70091F1C3ED07100E75ECF /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
@@ -71,8 +71,8 @@
 				EFAC3F471C45C719002CD63F /* TempiFFT.swift */,
 				EFAC3F451C406DC5002CD63F /* TempiUtilities.swift */,
 				EFAC3F4D1C4D7B76002CD63F /* TempiDebug.swift */,
-				EF7009171C3ED07100E75ECF /* Main.storyboard */,
 				EF70091A1C3ED07100E75ECF /* Assets.xcassets */,
+				EF140AE322C3E76C0079D5FD /* Main.storyboard */,
 				EF70091C1C3ED07100E75ECF /* LaunchScreen.storyboard */,
 				EF70091F1C3ED07100E75ECF /* Info.plist */,
 			);
@@ -139,9 +139,9 @@
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EF140AE122C3E76C0079D5FD /* Main.storyboard in Resources */,
 				EF70091E1C3ED07100E75ECF /* LaunchScreen.storyboard in Resources */,
 				EF70091B1C3ED07100E75ECF /* Assets.xcassets in Resources */,
-				EF7009191C3ED07100E75ECF /* Main.storyboard in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -165,10 +165,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXVariantGroup section */
-		EF7009171C3ED07100E75ECF /* Main.storyboard */ = {
+		EF140AE322C3E76C0079D5FD /* Main.storyboard */ = {
 			isa = PBXVariantGroup;
 			children = (
-				EF7009181C3ED07100E75ECF /* Base */,
+				EF140AE222C3E76C0079D5FD /* Base */,
 			);
 			name = Main.storyboard;
 			sourceTree = "<group>";
@@ -230,7 +230,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				MTL_ENABLE_DEBUG_INFO = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = iphoneos;
@@ -278,7 +278,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 9.2;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				SDKROOT = iphoneos;
 				SWIFT_OPTIMIZATION_LEVEL = "-Owholemodule";
@@ -292,6 +292,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = V46VL48CWC;
 				INFOPLIST_FILE = TempiFFT/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = net.scalo.TempiHarness;
 				PRODUCT_NAME = "$(TARGET_NAME)";
@@ -305,6 +306,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				DEVELOPMENT_TEAM = V46VL48CWC;
 				INFOPLIST_FILE = TempiFFT/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 11.4;
 				LD_RUNPATH_SEARCH_PATHS = "$(inherited) @executable_path/Frameworks";
 				PRODUCT_BUNDLE_IDENTIFIER = net.scalo.TempiHarness;
 				PRODUCT_NAME = "$(TARGET_NAME)";

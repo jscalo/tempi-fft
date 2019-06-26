@@ -11,15 +11,12 @@ import AVFoundation
 
 class SpectralViewController: UIViewController {
     
+    @IBOutlet weak var spectralView: SpectralView!
+    
     var audioInput: TempiAudioInput!
-    var spectralView: SpectralView!
     
     override func viewDidLoad() {
         super.viewDidLoad()
-
-        spectralView = SpectralView(frame: self.view.bounds)
-        spectralView.backgroundColor = UIColor.black
-        self.view.addSubview(spectralView)
         
         let audioInputCallback: TempiAudioInputCallback = { (timeStamp, numberOfFrames, samples) -> Void in
             self.gotSomeAudio(timeStamp: Double(timeStamp), numberOfFrames: Int(numberOfFrames), samples: samples)
